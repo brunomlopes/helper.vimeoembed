@@ -1,44 +1,41 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '../styles/Home.module.css'
-import { ChangeEvent, ChangeEventHandler, useEffect, useState } from 'react'
+import Head from "next/head";
+import Image from "next/image";
+import { Inter } from "@next/font/google";
+import styles from "../styles/Home.module.css";
+import { ChangeEvent, ChangeEventHandler, useEffect, useState } from "react";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
+  const [referrer, setReferrer] = useState("");
   const [output, setOutput] = useState("");
 
-  useEffect( ()=>{
-    const fetchData = async ()=>{
-      var result = await Promise.all(input.split("\n")
-      .map(async s => {
-        let url = s.trim();
-        if(!url.startsWith("http")){
-          console.warn(`Line '${url}' is not an url`);
-          return "";
-        }
-        let result :{thumbnail_url:string, video_id:string} = (await (await fetch(`http://vimeo.com/api/oembed.json?url=${url}`)).json());
-        let embedHtml=`<img class="ic-youtube" data-video="vimeo" src="${result['thumbnail_url']}" data-vimeo-id="${result['video_id']}">`
-        return embedHtml;
-      }));
-      let val = "";
-      
-      
-      setOutput(result.join("\n"));
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      let url = "/api/hello";
+      let ref = referrer?.trim() ?? "";
+      if (ref != "") {
+        url = url + `?referrer=${ref}`;
+      }
+      var result = await fetch(url, { body: input, method: "POST" });
+      var body = await result.text();
+      setOutput(body);
+      setIsLoading(false);
+    };
 
-    fetchData().catch(console.error);
-    let val = input;
-    val =`Hey, val was ${val}`
-    setOutput(val);
-  }, [input])
+    setIsLoading(true);
+    fetchData().catch((e) => {
+      setIsLoading(false);
+      console.error(e);
+    });
+  }, [input, referrer]);
 
-    const processInput = (input:ChangeEvent<HTMLTextAreaElement>)=>{
-      let val = input.target.value;
-      setInput(val);
-    }
+  const processInput = (input: ChangeEvent<HTMLTextAreaElement>) => {
+    let val = input.target.value;
+    setInput(val);
+  };
 
   return (
     <>
@@ -49,39 +46,54 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <div className={styles.description}>
-          <div>
+        <div style={{ width: "100%" }}>
+          <label>Urls, one per line:</label>
+          <div style={{ width: "100%" }}>
             <textarea
               name="keymap_input"
               id="keymap_input"
               cols={30}
               rows={10}
-              className={styles.input_textarea}
+              style={{ width: "100%" }}
               value={input}
               onChange={processInput}
             ></textarea>
           </div>
-          
         </div>
 
-        <div className={styles.center}>
+        <div style={{ width: "100%" }}>
+          <label>Referrer (optional):</label>
+          <input
+            type="text"
+            placeholder="referrer"
+            value={referrer}
+            onChange={(c) => setReferrer(c.target.value)}
+            style={{ width: "100%" }}
+          ></input>
+        </div>
+
         <div>
-            <textarea
-              name="keymap_input"
-              id="keymap_input"
-              readOnly
-              cols={30}
-              rows={10}
-              className={styles.input_textarea}
-              value={output}
-            ></textarea>
-          </div>        
+          <label>
+            Output to embed:
+            <span style={{display: isLoading?"initial":"none"}}>
+    (loading)
+            </span>
+          </label>
+        </div>
+        <div className={styles.mainoutput}>
+          <textarea
+            name="keymap_input"
+            id="keymap_input"
+            readOnly
+            cols={30}
+            rows={10}
+            className={styles.mainoutput}
+            value={output}
+          ></textarea>
         </div>
 
-        <div className={styles.grid}>
-
-        </div>
+        <div className={styles.grid}></div>
       </main>
     </>
-  )
+  );
 }

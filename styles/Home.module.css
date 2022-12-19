@@ -25,6 +25,10 @@
   gap: 0.5rem;
 }
 
+.mainoutput{
+  width:100%;
+}
+
 .description p {
   position: relative;
   margin: 0;
