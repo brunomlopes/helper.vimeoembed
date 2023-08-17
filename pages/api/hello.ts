@@ -27,7 +27,7 @@ const fetchData = async (input: string, referrer: string | null) => {
         return embedHtml;
       }catch(error){
         console.warn(`Line ${url} didn't work. `, error);
-        return "";
+        return `<!-- Error on url:'${url}': '${error}' -->`;
       }
       
     })
