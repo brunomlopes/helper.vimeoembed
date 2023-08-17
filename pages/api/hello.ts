@@ -17,13 +17,19 @@ const fetchData = async (input: string, referrer: string | null) => {
       if (referrer) {
         headers["Referer"] = referrer;
       }
-      let result: { thumbnail_url: string; video_id: string } = await (
-        await fetch(`http://vimeo.com/api/oembed.json?url=${url}`, {
-          headers: headers,
-        })
-      ).json();
-      let embedHtml = `<img class="ic-youtube" data-video="vimeo" src="${result["thumbnail_url"]}" data-vimeo-id="${result["video_id"]}">`;
-      return embedHtml;
+      try{
+        let result: { thumbnail_url: string; video_id: string } = await (
+          await fetch(`http://vimeo.com/api/oembed.json?url=${url}`, {
+            headers: headers,
+          })
+        ).json();
+        let embedHtml = `<img class="ic-youtube" data-video="vimeo" src="${result["thumbnail_url"]}" data-vimeo-id="${result["video_id"]}">`;
+        return embedHtml;
+      }catch(error){
+        console.warn(`Line ${url} didn't work. `, error);
+        return "";
+      }
+      
     })
   );
 
